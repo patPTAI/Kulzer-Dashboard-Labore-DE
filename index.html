@@ -1,626 +1,336 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kulzer Labor-Segmentierung Deutschland 2025</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: #333;
-            line-height: 1.6;
-        }
-        
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        
-        .header {
-            text-align: center;
-            color: white;
-            padding: 40px 0;
-            background: rgba(0,0,0,0.3);
-            border-radius: 15px;
-            margin-bottom: 30px;
-        }
-        
-        h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        }
-        
-        .subtitle {
-            font-size: 1.2em;
-            opacity: 0.9;
-        }
-        
-        .dashboard {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-        
-        .card {
-            background: white;
-            border-radius: 15px;
-            padding: 25px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            transition: transform 0.3s ease;
-        }
-        
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
-        }
-        
-        .segment-card {
-            cursor: pointer;
-            border-left: 5px solid;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .segment-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, transparent, rgba(255,255,255,0.1));
-            transform: translateX(-100%);
-            transition: transform 0.3s ease;
-        }
-        
-        .segment-card:hover::before {
-            transform: translateX(0);
-        }
-        
-        .segment-1 { border-left-color: #4CAF50; }
-        .segment-2 { border-left-color: #2196F3; }
-        .segment-3 { border-left-color: #FF9800; }
-        .segment-4 { border-left-color: #9C27B0; }
-        .segment-5 { border-left-color: #F44336; }
-        
-        .segment-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-        
-        .segment-title {
-            font-size: 1.3em;
-            font-weight: bold;
-            color: #333;
-        }
-        
-        .percentage {
-            font-size: 1.5em;
-            font-weight: bold;
-            opacity: 0.7;
-        }
-        
-        .segment-subtitle {
-            font-style: italic;
-            color: #666;
-            margin-bottom: 15px;
-            font-size: 0.95em;
-        }
-        
-        .segment-details {
-            display: none;
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 1px solid #eee;
-        }
-        
-        .segment-details.active {
-            display: block;
-            animation: slideDown 0.3s ease;
-        }
-        
-        @keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        .detail-item {
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-        }
-        
-        .detail-label {
-            font-weight: 600;
-            color: #555;
-            min-width: 140px;
-        }
-        
-        .detail-value {
-            color: #777;
-        }
-        
-        .chart-container {
-            background: white;
-            border-radius: 15px;
-            padding: 25px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            margin-bottom: 30px;
-        }
-        
-        .chart-title {
-            font-size: 1.5em;
-            color: #333;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-        
-        .tech-level {
-            display: flex;
-            gap: 5px;
-            align-items: center;
-        }
-        
-        .tech-dot {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background: #ddd;
-        }
-        
-        .tech-dot.active {
-            background: #4CAF50;
-        }
-        
-        .matrix-table {
-            width: 100%;
-            background: white;
-            border-radius: 15px;
-            padding: 25px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            overflow-x: auto;
-        }
-        
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        
-        th {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            padding: 15px;
-            text-align: left;
-            font-weight: 600;
-        }
-        
-        td {
-            padding: 12px 15px;
-            border-bottom: 1px solid #f0f0f0;
-        }
-        
-        tr:hover {
-            background: #f8f8f8;
-        }
-        
-        .footer {
-            text-align: center;
-            color: white;
-            padding: 20px;
-            margin-top: 40px;
-            background: rgba(0,0,0,0.3);
-            border-radius: 15px;
-        }
-        
-        @media (max-width: 768px) {
-            .dashboard {
-                grid-template-columns: 1fr;
-            }
-            
-            h1 {
-                font-size: 1.8em;
-            }
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <title>Kulzer Labor-Segmentierung – Dashboard (Minimal)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --bg: #f5f5f7;
+      --card: #fff;
+      --text: #1f2933;
+      --muted: #6b7280;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+    header {
+      padding: 1.5rem 1rem 0.5rem;
+      max-width: 1080px;
+      margin: 0 auto;
+    }
+    header h1 { margin: 0; font-size: 1.5rem; font-weight: 600; }
+    header p { margin: .4rem 0 .8rem; color: var(--muted); font-size: .9rem; }
+    .filter-bar {
+      display: flex;
+      gap: .6rem;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+    .filter-bar label {
+      font-size: .8rem;
+      color: var(--muted);
+    }
+    .filter-bar select {
+      padding: .35rem .6rem;
+      border-radius: .5rem;
+      border: 1px solid rgba(0,0,0,.08);
+      background: #fff;
+      font-size: .8rem;
+    }
+    main {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 1rem;
+      display: grid;
+      gap: 1rem;
+    }
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1rem;
+    }
+    .card {
+      background: var(--card);
+      border-radius: .75rem;
+      padding: 1rem 1.1rem;
+      border: 1px solid rgba(15, 23, 42, .03);
+    }
+    .card h2 { font-size: .95rem; margin-bottom: .5rem; }
+    .kpi-value { font-size: 1.35rem; font-weight: 600; }
+    .kpi-label { font-size: .7rem; color: var(--muted); }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1rem;
+    }
+    .segment-list { display: grid; gap: .5rem; }
+    .segment-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #fff;
+      border-radius: .55rem;
+      padding: .45rem .7rem .45rem .2rem;
+    }
+    .segment-left { display: flex; align-items: center; gap: .5rem; }
+    .dot { width: 12px; height: 12px; border-radius: 999px; }
+    .segment-title { font-size: .82rem; }
+    .segment-sub { font-size: .7rem; color: var(--muted); }
+    .segment-pct { font-weight: 600; font-size: .8rem; }
+    #segmentInfo h3 { margin-top: 0; }
+    #segmentInfo p { margin: .35rem 0; font-size: .78rem; color: var(--muted); }
+    footer {
+      text-align: center;
+      font-size: .7rem;
+      color: var(--muted);
+      padding: 1.5rem 0 2rem;
+    }
+    @media (max-width: 640px) {
+      .grid-2 { grid-template-columns: 1fr; }
+      .filter-bar { flex-wrap: wrap; }
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>🎯 Kulzer Labor-Segmentierung Deutschland 2025</h1>
-            <div class="subtitle">Moderne Marktsegmentierung für strategische Vertriebsexzellenz</div>
-        </div>
-        
-        <div class="chart-container">
-            <div class="chart-title">Marktanteile der Laborsegmente</div>
-            <canvas id="marketShareChart" width="400" height="150"></canvas>
-        </div>
-        
-        <div class="dashboard">
-            <div class="card segment-card segment-1" onclick="toggleDetails(this)">
-                <div class="segment-header">
-                    <div class="segment-title">Digitale Pioniere</div>
-                    <div class="percentage">38%</div>
-                </div>
-                <div class="segment-subtitle">"Wir gestalten die Zukunft der Zahntechnik"</div>
-                <div class="detail-item">
-                    <span class="detail-label">Technologie:</span>
-                    <div class="tech-level">
-                        <div class="tech-dot active"></div>
-                        <div class="tech-dot active"></div>
-                        <div class="tech-dot active"></div>
-                        <div class="tech-dot active"></div>
-                        <div class="tech-dot active"></div>
-                    </div>
-                </div>
-                <div class="segment-details">
-                    <div class="detail-item">
-                        <span class="detail-label">Laborgröße:</span>
-                        <span class="detail-value">10-50 Mitarbeiter</span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-label">Hauptfokus:</span>
-                        <span class="detail-value">Innovation & Wachstum</span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-label">DSO-Anteil:</span>
-                        <span class="detail-value">Hoch (40%)</span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-label">Kulzer-Strategie:</span>
-                        <span class="detail-value">Partner für digitale Exzellenz</span>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="card segment-card segment-2" onclick="toggleDetails(this)">
-                <div class="segment-header">
-                    <div class="segment-title">Qualitäts-Bewahrer</div>
-                    <div class="percentage">22%</div>
-                </div>
-                <div class="segment-subtitle">"Tradition trifft auf bewährte Qualität"</div>
-                <div class="detail-item">
-                    <span class="detail-label">Technologie:</span>
-                    <div class="tech-level">
-                        <div class="tech-dot active"></div>
-                        <div class="tech-dot active"></div>
-                        <div class="tech-dot"></div>
-                        <div class="tech-dot"></div>
-                        <div class="tech-dot"></div>
-                    </div>
-                </div>
-                <div class="segment-details">
-                    <div class="detail-item">
-                        <span class="detail-label">Laborgröße:</span>
-                        <span class="detail-value">5-15 Mitarbeiter</span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-label">Hauptfokus:</span>
-                        <span class="detail-value">Qualität & Tradition</span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-label">DSO-Anteil:</span>
-                        <span class="detail-value">Niedrig (10%)</span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-label">Kulzer-Strategie:</span>
-                        <span class="detail-value">Verlässlicher Partner seit Generationen</span>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="card segment-card segment-3" onclick="toggleDetails(this)">
-                <div class="segment-header">
-                    <div class="segment-title">Kreative Spezialisten</div>
-                    <div class="percentage">18%</div>
-                </div>
-                <div class="segment-subtitle">"Wo Kunst auf Zahntechnik trifft"</div>
-                <div class="detail-item">
-                    <span class="detail-label">Technologie:</span>
-                    <div class="tech-level">
-                        <div class="tech-dot active"></div>
-                        <div class="tech-dot active"></div>
-                        <div class="tech-dot"></div>
-                        <div class="tech-dot"></div>
-                        <div class="tech-dot"></div>
-                    </div>
-                </div>
-                <div class="segment-details">
-                    <div class="detail-item">
-                        <span class="detail-label">Laborgröße:</span>
-                        <span class="detail-value">1-5 Mitarbeiter</span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-label">Hauptfokus:</span>
-                        <span class="detail-value">Kunst & Handwerk</span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-label">DSO-Anteil:</span>
-                        <span class="detail-value">Sehr niedrig (5%)</span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-label">Kulzer-Strategie:</span>
-                        <span class="detail-value">Premium-Materialien für Ihre Kunst</span>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="card segment-card segment-4" onclick="toggleDetails(this)">
-                <div class="segment-header">
-                    <div class="segment-title">Effizienz-Champions</div>
-                    <div class="percentage">14%</div>
-                </div>
-                <div class="segment-subtitle">"Optimierte Prozesse, maximaler Output"</div>
-                <div class="detail-item">
-                    <span class="detail-label">Technologie:</span>
-                    <div class="tech-level">
-                        <div class="tech-dot active"></div>
-                        <div class="tech-dot active"></div>
-                        <div class="tech-dot active"></div>
-                        <div class="tech-dot active"></div>
-                        <div class="tech-dot"></div>
-                    </div>
-                </div>
-                <div class="segment-details">
-                    <div class="detail-item">
-                        <span class="detail-label">Laborgröße:</span>
-                        <span class="detail-value">8-20 Mitarbeiter</span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-label">Hauptfokus:</span>
-                        <span class="detail-value">Prozess & Effizienz</span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-label">DSO-Anteil:</span>
-                        <span class="detail-value">Mittel (25%)</span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-label">Kulzer-Strategie:</span>
-                        <span class="detail-value">Effizienz trifft Qualität</span>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="card segment-card segment-5" onclick="toggleDetails(this)">
-                <div class="segment-header">
-                    <div class="segment-title">Adaptive Pragmatiker</div>
-                    <div class="percentage">8%</div>
-                </div>
-                <div class="segment-subtitle">"Flexibel durch alle Stürme"</div>
-                <div class="detail-item">
-                    <span class="detail-label">Technologie:</span>
-                    <div class="tech-level">
-                        <div class="tech-dot active"></div>
-                        <div class="tech-dot active"></div>
-                        <div class="tech-dot active"></div>
-                        <div class="tech-dot"></div>
-                        <div class="tech-dot"></div>
-                    </div>
-                </div>
-                <div class="segment-details">
-                    <div class="detail-item">
-                        <span class="detail-label">Laborgröße:</span>
-                        <span class="detail-value">3-8 Mitarbeiter</span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-label">Hauptfokus:</span>
-                        <span class="detail-value">Überleben & Anpassung</span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-label">DSO-Anteil:</span>
-                        <span class="detail-value">Mittel (20%)</span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-label">Kulzer-Strategie:</span>
-                        <span class="detail-value">Flexible Lösungen für Ihren Erfolg</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="chart-container">
-            <div class="chart-title">Technologie-Affinität vs. Investitionsbereitschaft</div>
-            <canvas id="technologyChart" width="400" height="200"></canvas>
-        </div>
-        
-        <div class="matrix-table">
-            <div class="chart-title">Segment-Vergleichsmatrix</div>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Segment</th>
-                        <th>Marktanteil</th>
-                        <th>Premium-Affinität</th>
-                        <th>Preissensitivität</th>
-                        <th>Haupttouchpoints</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td><strong>Digitale Pioniere</strong></td>
-                        <td>38%</td>
-                        <td>Sehr hoch</td>
-                        <td>Niedrig</td>
-                        <td>Digital, Webinare, LinkedIn</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Qualitäts-Bewahrer</strong></td>
-                        <td>22%</td>
-                        <td>Hoch</td>
-                        <td>Mittel</td>
-                        <td>Außendienst, Telefon, Print</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Kreative Spezialisten</strong></td>
-                        <td>18%</td>
-                        <td>Hoch</td>
-                        <td>Mittel</td>
-                        <td>Instagram, Workshops, Peers</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Effizienz-Champions</strong></td>
-                        <td>14%</td>
-                        <td>Mittel</td>
-                        <td>Hoch</td>
-                        <td>Online-Plattformen, Webshops</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Adaptive Pragmatiker</strong></td>
-                        <td>8%</td>
-                        <td>Niedrig</td>
-                        <td>Sehr hoch</td>
-                        <td>Digitale Marktplätze, WhatsApp</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-        
-        <div class="footer">
-            <p>© 2025 Kulzer GmbH - Vertrauliche Marktsegmentierung</p>
-            <p style="margin-top: 10px; font-size: 0.9em;">Basierend auf aktuellen Marktanalysen und Branchentrends</p>
-        </div>
+  <header>
+    <h1>Kulzer Labor-Segmentierung 2025</h1>
+    <p>Reduzierte Übersicht über Marktanteile und wichtigste Segment-Merkmale.</p>
+    <div class="filter-bar">
+      <label for="segmentFilter">Segment auswählen:</label>
+      <select id="segmentFilter">
+        <option value="all">Alle Segmente</option>
+        <option value="digitale-pioniere">Digitale Pioniere</option>
+        <option value="qualitaets-bewahrer">Qualitäts-Bewahrer</option>
+        <option value="kreative-spezialisten">Kreative Spezialisten</option>
+        <option value="effizienz-champions">Effizienz-Champions</option>
+        <option value="adaptive-pragmatiker">Adaptive Pragmatiker</option>
+      </select>
     </div>
-    
-    <script>
-        // Toggle segment details
-        function toggleDetails(element) {
-            const details = element.querySelector('.segment-details');
-            details.classList.toggle('active');
+  </header>
+  <main>
+    <section class="kpi-row">
+      <div class="card">
+        <h2>Fokus-Segment</h2>
+        <div class="kpi-value">Digitale Pioniere</div>
+        <div class="kpi-label">höchstes Umsatzpotenzial</div>
+      </div>
+      <div class="card">
+        <h2>Marktabdeckung</h2>
+        <div class="kpi-value">100 %</div>
+        <div class="kpi-label">5 Segmente</div>
+      </div>
+      <div class="card">
+        <h2>Digital stark</h2>
+        <div class="kpi-value">52 %</div>
+        <div class="kpi-label">Pioniere + Effizienz</div>
+      </div>
+      <div class="card">
+        <h2>Preis-sensitiv</h2>
+        <div class="kpi-value">8 %</div>
+        <div class="kpi-label">Adaptive Pragmatiker</div>
+      </div>
+    </section>
+
+    <section class="grid-2">
+      <div class="card">
+        <h2>Marktanteile</h2>
+        <canvas id="marketShare" height="180"></canvas>
+      </div>
+      <div class="card">
+        <h2>Tech × Investition</h2>
+        <canvas id="techInvest" height="180"></canvas>
+      </div>
+    </section>
+
+    <section class="card" id="segmentInfo">
+      <h2>Segment-Info</h2>
+      <h3>Gesamtübersicht</h3>
+      <p>Wählen Sie oben ein Segment, um eine kurze Beschreibung, typische Laborgröße und die empfohlene Kulzer-Ansprache zu sehen.</p>
+    </section>
+
+    <section class="card">
+      <h2>Segmente</h2>
+      <div class="segment-list" id="segmentList">
+        <div class="segment-item" data-segment="digitale-pioniere">
+            <div class="segment-left">
+              <div class="dot" style="background:#2563eb"></div>
+              <div>
+                <div class="segment-title">Digitale Pioniere</div>
+                <div class="segment-sub">10–50 MA · sehr hohe Tech-Affinität</div>
+              </div>
+            </div>
+            <div class="segment-pct">38%</div>
+        </div>
+        <div class="segment-item" data-segment="qualitaets-bewahrer">
+          <div class="segment-left">
+            <div class="dot" style="background:#0f766e"></div>
+            <div>
+              <div class="segment-title">Qualitäts-Bewahrer</div>
+              <div class="segment-sub">5–15 MA · loyal</div>
+            </div>
+          </div>
+          <div class="segment-pct">22%</div>
+        </div>
+        <div class="segment-item" data-segment="kreative-spezialisten">
+          <div class="segment-left">
+            <div class="dot" style="background:#f97316"></div>
+            <div>
+              <div class="segment-title">Kreative Spezialisten</div>
+              <div class="segment-sub">1–5 MA · Ästhetik</div>
+            </div>
+          </div>
+          <div class="segment-pct">18%</div>
+        </div>
+        <div class="segment-item" data-segment="effizienz-champions">
+          <div class="segment-left">
+            <div class="dot" style="background:#7c3aed"></div>
+            <div>
+              <div class="segment-title">Effizienz-Champions</div>
+              <div class="segment-sub">8–20 MA · Prozesse</div>
+            </div>
+          </div>
+          <div class="segment-pct">14%</div>
+        </div>
+        <div class="segment-item" data-segment="adaptive-pragmatiker">
+          <div class="segment-left">
+            <div class="dot" style="background:#dc2626"></div>
+            <div>
+              <div class="segment-title">Adaptive Pragmatiker</div>
+              <div class="segment-sub">3–8 MA · flexibel</div>
+            </div>
+          </div>
+          <div class="segment-pct">8%</div>
+        </div>
+      </div>
+    </section>
+  </main>
+  <footer>© 2025 Kulzer – interne Verwendung</footer>
+
+  <script>
+    // Chart 1
+    const ctx1 = document.getElementById('marketShare').getContext('2d');
+    new Chart(ctx1, {
+      type: 'doughnut',
+      data: {
+        labels: [
+          'Digitale Pioniere',
+          'Qualitäts-Bewahrer',
+          'Kreative Spezialisten',
+          'Effizienz-Champions',
+          'Adaptive Pragmatiker'
+        ],
+        datasets: [{
+          data: [38, 22, 18, 14, 8],
+          backgroundColor: [
+            '#2563eb',
+            '#0f766e',
+            '#f97316',
+            '#7c3aed',
+            '#dc2626'
+          ],
+          borderWidth: 0
+        }]
+      },
+      options: {
+        plugins: { legend: { position: 'bottom' } },
+        cutout: '60%'
+      }
+    });
+
+    // Chart 2
+    const ctx2 = document.getElementById('techInvest').getContext('2d');
+    new Chart(ctx2, {
+      type: 'scatter',
+      data: {
+        datasets: [
+          { label: 'Digitale Pioniere', data: [{x: 9, y: 9}], backgroundColor: '#2563eb', pointRadius: 6 },
+          { label: 'Qualitäts-Bewahrer', data: [{x: 3, y: 5}], backgroundColor: '#0f766e', pointRadius: 6 },
+          { label: 'Kreative Spezialisten', data: [{x: 5, y: 4}], backgroundColor: '#f97316', pointRadius: 6 },
+          { label: 'Effizienz-Champions', data: [{x: 7, y: 7}], backgroundColor: '#7c3aed', pointRadius: 6 },
+          { label: 'Adaptive Pragmatiker', data: [{x: 6, y: 5}], backgroundColor: '#dc2626', pointRadius: 6 },
+        ]
+      },
+      options: {
+        scales: {
+          x: { min: 0, max: 10, title: { display: true, text: 'Technologie-Affinität' } },
+          y: { min: 0, max: 10, title: { display: true, text: 'Investitionsbereitschaft' } }
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: { label: (ctx) => ctx.dataset.label }
+          }
         }
-        
-        // Market Share Pie Chart
-        const marketCtx = document.getElementById('marketShareChart').getContext('2d');
-        const marketShareChart = new Chart(marketCtx, {
-            type: 'doughnut',
-            data: {
-                labels: ['Digitale Pioniere', 'Qualitäts-Bewahrer', 'Kreative Spezialisten', 'Effizienz-Champions', 'Adaptive Pragmatiker'],
-                datasets: [{
-                    data: [38, 22, 18, 14, 8],
-                    backgroundColor: [
-                        '#4CAF50',
-                        '#2196F3',
-                        '#FF9800',
-                        '#9C27B0',
-                        '#F44336'
-                    ],
-                    borderColor: '#fff',
-                    borderWidth: 2
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'right',
-                        labels: {
-                            padding: 20,
-                            font: {
-                                size: 14
-                            }
-                        }
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                return context.label + ': ' + context.parsed + '%';
-                            }
-                        }
-                    }
-                }
-            }
-        });
-        
-        // Technology vs Investment Scatter Chart
-        const techCtx = document.getElementById('technologyChart').getContext('2d');
-        const technologyChart = new Chart(techCtx, {
-            type: 'scatter',
-            data: {
-                datasets: [{
-                    label: 'Digitale Pioniere',
-                    data: [{x: 9, y: 9}],
-                    backgroundColor: '#4CAF50',
-                    pointRadius: 15
-                }, {
-                    label: 'Qualitäts-Bewahrer',
-                    data: [{x: 3, y: 5}],
-                    backgroundColor: '#2196F3',
-                    pointRadius: 11
-                }, {
-                    label: 'Kreative Spezialisten',
-                    data: [{x: 5, y: 4}],
-                    backgroundColor: '#FF9800',
-                    pointRadius: 9
-                }, {
-                    label: 'Effizienz-Champions',
-                    data: [{x: 7, y: 7}],
-                    backgroundColor: '#9C27B0',
-                    pointRadius: 8
-                }, {
-                    label: 'Adaptive Pragmatiker',
-                    data: [{x: 6, y: 5}],
-                    backgroundColor: '#F44336',
-                    pointRadius: 6
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    x: {
-                        type: 'linear',
-                        position: 'bottom',
-                        title: {
-                            display: true,
-                            text: 'Technologie-Affinität →',
-                            font: {
-                                size: 14
-                            }
-                        },
-                        min: 0,
-                        max: 10
-                    },
-                    y: {
-                        title: {
-                            display: true,
-                            text: 'Investitionsbereitschaft →',
-                            font: {
-                                size: 14
-                            }
-                        },
-                        min: 0,
-                        max: 10
-                    }
-                },
-                plugins: {
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                return context.dataset.label;
-                            }
-                        }
-                    }
-                }
-            }
-        });
-    </script>
+      }
+    });
+
+    // Segmentinfos
+    const segmentInfos = {
+      "all": {
+        title: "Gesamtübersicht",
+        text: "Wählen Sie oben ein Segment, um eine kurze Beschreibung, typische Laborgröße und die empfohlene Kulzer-Ansprache zu sehen."
+      },
+      "digitale-pioniere": {
+        title: "Digitale Pioniere (38%)",
+        text: "10–50 MA, mehrere CAD/CAM-Systeme, hohe DSO-Quote. Suchen integrierte, skalierbare Lösungen und 24/7 Support.",
+        strategy: "Kulzer-Ansprache: „Partner für digitale Exzellenz“ – Komplettlösungen, Beta-Programme, Premium-Support."
+      },
+      "qualitaets-bewahrer": {
+        title: "Qualitäts-Bewahrer (22%)",
+        text: "5–15 MA, oft familiengeführt, starke Stammkunden. Digitalisierung eher schrittweise.",
+        strategy: "Kulzer-Ansprache: „Verlässlicher Partner seit Generationen“ – persönliche Betreuung, Schulungen zur sanften Digitalisierung."
+      },
+      "kreative-spezialisten": {
+        title: "Kreative Spezialisten (18%)",
+        text: "1–5 MA, hochästhetische Arbeiten, kleine Stückzahlen, sehr qualitätsgetrieben.",
+        strategy: "Kulzer-Ansprache: „Premium-Materialien für Ihre Kunst“ – kleine Verpackungen, Ästhetik-Linien, Community."
+      },
+      "effizienz-champions": {
+        title: "Effizienz-Champions (14%)",
+        text: "8–20 MA, stark prozessorientiert, Volumensegmente, TCO wichtig.",
+        strategy: "Kulzer-Ansprache: „Effizienz trifft Qualität“ – Prozessberatung, Bulk-Pricing, automatisierte Bestellsysteme."
+      },
+      "adaptive-pragmatiker": {
+        title: "Adaptive Pragmatiker (8%)",
+        text: "3–8 MA, viel Outsourcing, flexibel, preissensitiv.",
+        strategy: "Kulzer-Ansprache: „Flexible Lösungen für Ihren Erfolg“ – Pay-per-Use, Basislinien, Gebrauchtgeräte."
+      }
+    };
+
+    const filterSelect = document.getElementById('segmentFilter');
+    const segmentItems = document.querySelectorAll('#segmentList .segment-item');
+    const segmentInfoBox = document.getElementById('segmentInfo');
+
+    function renderInfo(key) {
+      const info = segmentInfos[key] || segmentInfos["all"];
+      segmentInfoBox.innerHTML = `
+        <h2>Segment-Info</h2>
+        <h3>${info.title}</h3>
+        <p>${info.text}</p>
+        ${info.strategy ? `<p><strong>Empfohlene Kulzer-Ansprache:</strong> ${info.strategy}</p>` : ``}
+      `;
+    }
+
+    filterSelect.addEventListener('change', function() {
+      const val = this.value;
+      segmentItems.forEach(item => {
+        if (val === 'all') {
+          item.style.display = 'flex';
+        } else {
+          item.style.display = item.dataset.segment === val ? 'flex' : 'none';
+        }
+      });
+      renderInfo(val);
+    });
+
+    // initial
+    renderInfo("all");
+  </script>
 </body>
 </html>
